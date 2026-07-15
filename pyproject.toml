@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crumpling"
+version = "0.1.0"
+description = "Detect and analyze snap cascades in crumpling-sheet simulations"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+analysis = [
+  "jupyter",
+  "matplotlib",
+  "pandas",
+  "scipy",
+  "seaborn",
+]
+test = ["pytest>=8"]
+
+[project.scripts]
+crumpling-swapstat = "crumpling.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
