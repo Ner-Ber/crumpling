@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "crumpling-swapstat: trial32",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "crumpling",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "--manifest",
+        "${workspaceFolder}/configs/trial32/trial32.names.txt",
+        "--config",
+        "${workspaceFolder}/configs/trial32/swapstat.params.ini",
+        "--output-dir",
+        "${workspaceFolder}/outputs/trial32/current"
+      ],
+      "justMyCode": true
+    }
+  ]
+}
