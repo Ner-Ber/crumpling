@@ -8,9 +8,6 @@
       "module": "crumpling",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/src"
-      },
       "args": [
         "--manifest",
         "${workspaceFolder}/configs/trial32/trial32.names.txt",

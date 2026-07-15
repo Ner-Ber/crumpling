@@ -1,6 +1,6 @@
 # Data and repository layout
 
-The importable package is isolated under `src/crumpling`. Runtime artifacts do
+The importable package lives under the root `crumpling/` directory. Runtime artifacts do
 not live inside the package:
 
 - `data/raw/trial32/` contains the immutable 24-column full-format input.

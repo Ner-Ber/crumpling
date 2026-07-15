@@ -27,9 +27,9 @@ chronologically ordered times, and one header row. The six-column
 ## Cursor debugger
 
 Select **crumpling-swapstat: trial32** in Run and Debug and press F5. The launch
-configuration runs `python -m crumpling`, sets `PYTHONPATH` to `src`, and uses
+configuration runs `python -m crumpling` from the repository root with
 repository-absolute arguments; it does not depend on a data-directory working
-directory.
+directory or a custom `PYTHONPATH`.
 
 ## Configuration provenance
 

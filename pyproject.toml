@@ -24,7 +24,8 @@ test = ["pytest>=8"]
 crumpling-swapstat = "crumpling.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["crumpling*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

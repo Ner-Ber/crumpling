@@ -9,7 +9,7 @@ catalogs:
 3. thermal avalanches assembled from subavalanches.
 
 The original C++ program is retained in `legacy/`. The maintained implementation
-is the installable Python package in `src/crumpling`.
+is the installable Python package in `crumpling/`.
 
 ## Install
 
