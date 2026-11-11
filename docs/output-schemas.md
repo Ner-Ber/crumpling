@@ -1,10 +1,28 @@
 # Output schemas
 
+## In-memory catalogs
+
+After `pipeline.analyze_file` / `analyze_events`, wrap the result without
+re-clustering:
+
+```python
+from crumpling import catalogs, config, pipeline
+
+result = pipeline.analyze_file(path, config.load_config(ini))
+bundle = catalogs.build_catalogs(result)
+# bundle.snaps      (has cascade_id, avalanche_id)
+# bundle.cascades   (has avalanche_id, member_snap_ids)
+# bundle.avalanches (has member_cascade_ids)
+```
+
+Parent IDs are one-based; unset membership is pandas `NA`. Detection currently
+assigns every snap to a cascade and every cascade to an avalanche.
+
 Each run writes a stable directory:
 
 ```text
 catalogs/snaps.tsv
-catalogs/subavalanches.tsv
+catalogs/cascades.tsv
 catalogs/avalanches.tsv
 structure/avalanche_structure.tsv
 run_metadata.json
@@ -16,11 +34,11 @@ zero-based.
 ## Snap catalog
 
 One row per bond snap. It includes time, 3D bond-center location, direction,
-surface area, source number, and the IDs and sizes of its parent subavalanche and
+surface area, source number, and the IDs and sizes of its parent cascade and
 avalanche. Snap magnitude is treated as a unit event (`0` on a logarithmic
 magnitude scale) by the DataFrame API.
 
-## Subavalanche catalog
+## Cascade catalog
 
 One row per space-time cascade. Its earthquake-like origin time is the median
 (`time_p50`), location is the centroid, and magnitude is
@@ -30,7 +48,7 @@ planar principal inertia moments. `simultaneous_count` includes the event itself
 ## Avalanche catalog
 
 One row per thermal avalanche. It includes start/end/median/average time,
-centroid, swap and subavalanche counts, logarithmic size, temporal and spatial
+centroid, swap and cascade counts, logarithmic size, temporal and spatial
 gyration, diameter, and direction-corrected swap count.
 
 ## Avalanche structure
@@ -48,4 +66,6 @@ curve therefore reaches normalized count `1.0`.
 - the malformed double-tab markup header is removed;
 - all external IDs use one-based indexing;
 - avalanche metrics always use chronological member order;
-- avalanche structure uses corrected cumulative counts and a long schema.
+- avalanche structure uses corrected cumulative counts and a long schema;
+- catalog terminology uses snap / cascade / avalanche (legacy files still say
+  subavalanche).

@@ -19,13 +19,13 @@ SNAP_COLUMNS = (
     "z",
     "surface_area",
     "direction",
-    "subavalanche_id",
-    "subavalanche_size",
+    "cascade_id",
+    "cascade_size",
     "avalanche_id",
     "avalanche_size",
 )
 
-SUBAVALANCHE_COLUMNS = (
+CASCADE_COLUMNS = (
     "simulation_id",
     "source_file",
     "event_id",
@@ -59,7 +59,7 @@ AVALANCHE_COLUMNS = (
     "y",
     "z",
     "n_swaps",
-    "n_subavalanches",
+    "n_cascades",
     "magnitude",
     "direction_corrected_swaps",
     "temporal_gyration",
@@ -89,7 +89,7 @@ def write_snaps(
     rows = []
     for simulation_id, result in enumerate(simulations, start=1):
         for index, event in enumerate(result.events):
-            subavalanche_index = result.assignments.swap_to_subavalanche[index]
+            cascade_index = result.assignments.swap_to_cascade[index]
             avalanche_index = result.assignments.swap_to_avalanche[index]
             rows.append(
                 {
@@ -103,10 +103,8 @@ def write_snaps(
                     "z": event.position[2],
                     "surface_area": event.surface_area,
                     "direction": event.direction,
-                    "subavalanche_id": subavalanche_index + 1,
-                    "subavalanche_size": result.subavalanches[
-                        subavalanche_index
-                    ].n_swaps,
+                    "cascade_id": cascade_index + 1,
+                    "cascade_size": result.cascades[cascade_index].n_swaps,
                     "avalanche_id": avalanche_index + 1,
                     "avalanche_size": result.avalanches[avalanche_index].n_swaps,
                 }
@@ -114,14 +112,14 @@ def write_snaps(
     _write(path, SNAP_COLUMNS, rows)
 
 
-def write_subavalanches(
+def write_cascades(
     path: pathlib.Path, simulations: Sequence[models.SimulationResult]
 ) -> None:
-    """Write one row per subavalanche."""
+    """Write one row per cascade."""
 
     rows = []
     for simulation_id, result in enumerate(simulations, start=1):
-        for value in result.subavalanches:
+        for value in result.cascades:
             metric = value.metrics
             rows.append(
                 {
@@ -143,12 +141,11 @@ def write_subavalanches(
                     "inertia_2": metric.inertia_2,
                     "simultaneous_count": metric.simultaneous_count,
                     "avalanche_id": (
-                        result.assignments.subavalanche_to_avalanche[value.index]
-                        + 1
+                        result.assignments.cascade_to_avalanche[value.index] + 1
                     ),
                 }
             )
-    _write(path, SUBAVALANCHE_COLUMNS, rows)
+    _write(path, CASCADE_COLUMNS, rows)
 
 
 def write_avalanches(
@@ -174,7 +171,7 @@ def write_avalanches(
                     "y": metric.center[1],
                     "z": metric.center[2],
                     "n_swaps": value.n_swaps,
-                    "n_subavalanches": value.n_subavalanches,
+                    "n_cascades": value.n_cascades,
                     "magnitude": math.log10(value.n_swaps),
                     "direction_corrected_swaps": metric.direction_corrected_swaps,
                     "temporal_gyration": metric.temporal_gyration,

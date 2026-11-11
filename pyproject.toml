@@ -14,7 +14,9 @@ dependencies = ["numpy>=1.24"]
 analysis = [
   "jupyter",
   "matplotlib",
+  "numba",
   "pandas",
+  "scikit-image",
   "scipy",
   "seaborn",
 ]

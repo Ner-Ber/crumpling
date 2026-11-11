@@ -25,7 +25,7 @@ def test_cli_writes_stable_catalogs_and_corrected_structure(
         ]
     )
     assert exit_code == 0
-    for name in ("snaps", "subavalanches", "avalanches"):
+    for name in ("snaps", "cascades", "avalanches"):
         assert (output / "catalogs" / f"{name}.tsv").is_file()
     assert (output / "run_metadata.json").is_file()
 
@@ -34,7 +34,7 @@ def test_cli_writes_stable_catalogs_and_corrected_structure(
         assert tuple(reader.fieldnames or ()) == catalogs.SNAP_COLUMNS
         first = next(reader)
     assert first["event_id"] == "1"
-    assert first["subavalanche_id"] == "1"
+    assert first["cascade_id"] == "1"
     assert first["avalanche_id"] == "1"
 
     with (output / "structure" / "avalanche_structure.tsv").open() as stream:

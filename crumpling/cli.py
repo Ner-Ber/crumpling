@@ -18,7 +18,7 @@ from crumpling.output import structure
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="crumpling-swapstat",
-        description="Cluster full-format bond snaps into subavalanches and avalanches.",
+        description="Cluster full-format bond snaps into cascades and avalanches.",
     )
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(
@@ -78,9 +78,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         catalog_dir = output_dir / "catalogs"
         structure_dir = output_dir / "structure"
         catalogs.write_snaps(catalog_dir / "snaps.tsv", result.simulations)
-        catalogs.write_subavalanches(
-            catalog_dir / "subavalanches.tsv", result.simulations
-        )
+        catalogs.write_cascades(catalog_dir / "cascades.tsv", result.simulations)
         catalogs.write_avalanches(
             catalog_dir / "avalanches.tsv", result.simulations
         )

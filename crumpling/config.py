@@ -6,7 +6,7 @@ import pathlib
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-class SubavalancheDetectionConfig:
+class CascadeDetectionConfig:
     average_bond_length: float = 0.0
     max_time_gap: float = 10.0
     max_distance: float = 100.0
@@ -15,7 +15,7 @@ class SubavalancheDetectionConfig:
 @dataclasses.dataclass(frozen=True, slots=True)
 class AvalancheDetectionConfig:
     mechanism: int = 0
-    minimum_subavalanche_swaps: int = 1
+    minimum_cascade_swaps: int = 1
     max_relative_time_gap: float = 0.01
     minimum_absolute_time_gap: float = 0.01
     max_distance: float = 100.0
@@ -38,8 +38,8 @@ class StructureConfig:
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class AnalysisConfig:
-    subavalanches: SubavalancheDetectionConfig = dataclasses.field(
-        default_factory=SubavalancheDetectionConfig
+    cascades: CascadeDetectionConfig = dataclasses.field(
+        default_factory=CascadeDetectionConfig
     )
     avalanches: AvalancheDetectionConfig = dataclasses.field(
         default_factory=AvalancheDetectionConfig
@@ -66,7 +66,7 @@ def load_config(path: pathlib.Path | str) -> AnalysisConfig:
 
     maximum_time = _real(parser, "Statistics", "analysis_time_max", -1.0)
     result = AnalysisConfig(
-        subavalanches=SubavalancheDetectionConfig(
+        cascades=CascadeDetectionConfig(
             average_bond_length=_real(
                 parser, "SubavalancheDetection", "avgBondLength", 0.0
             ),
@@ -87,7 +87,7 @@ def load_config(path: pathlib.Path | str) -> AnalysisConfig:
             mechanism=_integer(
                 parser, "AvalancheDetection", "avalancheDetectionMechanism", 0
             ),
-            minimum_subavalanche_swaps=_integer(
+            minimum_cascade_swaps=_integer(
                 parser,
                 "AvalancheDetection",
                 "avDetection_subavNswaps_threshold",
@@ -137,16 +137,16 @@ def validate_config(value: AnalysisConfig) -> None:
 
     if value.avalanches.mechanism not in range(6):
         raise ValueError("avalanche detection mechanism must be between 0 and 5")
-    if value.subavalanches.max_time_gap < 0 or value.subavalanches.max_distance < 0:
-        raise ValueError("subavalanche thresholds cannot be negative")
+    if value.cascades.max_time_gap < 0 or value.cascades.max_distance < 0:
+        raise ValueError("cascade thresholds cannot be negative")
     if value.avalanches.max_relative_time_gap < 0:
         raise ValueError("relative avalanche time threshold cannot be negative")
     if value.avalanches.minimum_absolute_time_gap < 0:
         raise ValueError("absolute avalanche time threshold cannot be negative")
     if value.avalanches.max_distance < 0 or value.avalanches.max_velocity < 0:
         raise ValueError("avalanche distance and velocity thresholds cannot be negative")
-    if value.avalanches.minimum_subavalanche_swaps < 1:
-        raise ValueError("minimum subavalanche size must be at least one")
+    if value.avalanches.minimum_cascade_swaps < 1:
+        raise ValueError("minimum cascade size must be at least one")
     if value.window.maximum_time is not None:
         if value.window.maximum_time < value.window.minimum_time:
             raise ValueError("analysis maximum time precedes minimum time")

@@ -22,7 +22,7 @@ class SwapEvent:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-class SubavalancheMetrics:
+class CascadeMetrics:
     time_p50: float
     time_start: float
     time_end: float
@@ -36,12 +36,12 @@ class SubavalancheMetrics:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-class Subavalanche:
-    """A space-time cluster of swaps."""
+class Cascade:
+    """A space-time cluster of snaps."""
 
     index: int
     swap_indices: tuple[int, ...]
-    metrics: SubavalancheMetrics
+    metrics: CascadeMetrics
 
     @property
     def n_swaps(self) -> int:
@@ -67,16 +67,16 @@ class AvalancheMetrics:
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class Avalanche:
-    """A thermal avalanche composed of one or more subavalanches."""
+    """A thermal avalanche composed of one or more cascades."""
 
     index: int
-    subavalanche_indices: tuple[int, ...]
+    cascade_indices: tuple[int, ...]
     swap_indices: tuple[int, ...]
     metrics: AvalancheMetrics
 
     @property
-    def n_subavalanches(self) -> int:
-        return len(self.subavalanche_indices)
+    def n_cascades(self) -> int:
+        return len(self.cascade_indices)
 
     @property
     def n_swaps(self) -> int:
@@ -85,9 +85,9 @@ class Avalanche:
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class AssignmentMaps:
-    swap_to_subavalanche: tuple[int, ...]
+    swap_to_cascade: tuple[int, ...]
     swap_to_avalanche: tuple[int, ...]
-    subavalanche_to_avalanche: tuple[int, ...]
+    cascade_to_avalanche: tuple[int, ...]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -100,7 +100,7 @@ class SimulationSpec:
 class SimulationResult:
     source: pathlib.Path
     events: tuple[SwapEvent, ...]
-    subavalanches: tuple[Subavalanche, ...]
+    cascades: tuple[Cascade, ...]
     avalanches: tuple[Avalanche, ...]
     assignments: AssignmentMaps
 

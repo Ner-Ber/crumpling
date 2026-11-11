@@ -5,8 +5,8 @@ simulations. It turns a chronological 24-column swap table into three related
 catalogs:
 
 1. individual snaps;
-2. space-time subavalanches (cascades);
-3. thermal avalanches assembled from subavalanches.
+2. space-time cascades;
+3. thermal avalanches assembled from cascades.
 
 The original C++ program is retained in `legacy/`. The maintained implementation
 is the installable Python package in `crumpling/`.

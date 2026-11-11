@@ -1,4 +1,4 @@
-"""Strategies for combining subavalanches into thermal avalanches."""
+"""Strategies for combining cascades into thermal avalanches."""
 
 import dataclasses
 import enum
@@ -25,14 +25,14 @@ class AvalancheMechanism(enum.IntEnum):
 class DetectionResult:
     avalanches: tuple[models.Avalanche, ...]
     swap_to_avalanche: tuple[int, ...]
-    subavalanche_to_avalanche: tuple[int, ...]
+    cascade_to_avalanche: tuple[int, ...]
 
 
-def _distance(left: models.Subavalanche, right: models.Subavalanche) -> float:
+def _distance(left: models.Cascade, right: models.Cascade) -> float:
     return math.dist(left.metrics.center[:2], right.metrics.center[:2])
 
 
-def _relative_gap(current: models.Subavalanche, previous: models.Subavalanche) -> float:
+def _relative_gap(current: models.Cascade, previous: models.Cascade) -> float:
     return (
         current.metrics.time_p50 - previous.metrics.time_p50
     ) / current.metrics.time_p50
@@ -40,7 +40,7 @@ def _relative_gap(current: models.Subavalanche, previous: models.Subavalanche) -
 
 def _time_only_groups(
     ordered: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
 ) -> list[list[int]]:
     if not ordered:
@@ -48,7 +48,7 @@ def _time_only_groups(
     groups = [[ordered[0]]]
     for index in ordered[1:]:
         previous = groups[-1][-1]
-        if _relative_gap(subavalanches[index], subavalanches[previous]) >= (
+        if _relative_gap(cascades[index], cascades[previous]) >= (
             settings.max_relative_time_gap
         ):
             groups.append([index])
@@ -59,23 +59,23 @@ def _time_only_groups(
 
 def _closest_groups(
     ordered: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
 ) -> list[list[int]]:
     active: list[list[int]] = []
     completed: list[list[int]] = []
     for index in ordered:
-        current = subavalanches[index]
+        current = cascades[index]
         stopped = [False] * len(active)
         closest: int | None = None
         closest_distance = math.inf
         for group_index, group in enumerate(active):
-            if _relative_gap(current, subavalanches[group[-1]]) > (
+            if _relative_gap(current, cascades[group[-1]]) > (
                 settings.max_relative_time_gap
             ):
                 stopped[group_index] = True
             for previous_index in reversed(group):
-                previous = subavalanches[previous_index]
+                previous = cascades[previous_index]
                 if _relative_gap(current, previous) > settings.max_relative_time_gap:
                     break
                 distance = _distance(current, previous)
@@ -95,16 +95,16 @@ def _closest_groups(
 
 
 def _can_join(
-    current: models.Subavalanche,
+    current: models.Cascade,
     group: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
     mechanism: AvalancheMechanism,
 ) -> bool:
-    if current.n_swaps < settings.minimum_subavalanche_swaps:
+    if current.n_swaps < settings.minimum_cascade_swaps:
         return False
     for previous_index in reversed(group):
-        previous = subavalanches[previous_index]
+        previous = cascades[previous_index]
         absolute_gap = current.metrics.time_p50 - previous.metrics.time_p50
         relative_gap = absolute_gap / current.metrics.time_p50
         if mechanism == AvalancheMechanism.LARGEST_FIXED_DISTANCE:
@@ -126,7 +126,7 @@ def _can_join(
 
 def _largest_groups(
     ordered: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
     mechanism: AvalancheMechanism,
 ) -> list[list[int]]:
@@ -137,27 +137,27 @@ def _largest_groups(
             group_index
             for group_index, group in enumerate(groups)
             if _can_join(
-                subavalanches[index], group, subavalanches, settings, mechanism
+                cascades[index], group, cascades, settings, mechanism
             )
         ]
         if eligible:
             chosen = max(eligible, key=lambda group_index: sizes[group_index])
             groups[chosen].append(index)
-            sizes[chosen] += subavalanches[index].n_swaps
+            sizes[chosen] += cascades[index].n_swaps
         else:
             groups.append([index])
-            sizes.append(subavalanches[index].n_swaps)
+            sizes.append(cascades[index].n_swaps)
     return groups
 
 
 def _velocity_join(
-    current: models.Subavalanche,
+    current: models.Cascade,
     group: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
 ) -> bool:
     for previous_index in reversed(group):
-        previous = subavalanches[previous_index]
+        previous = cascades[previous_index]
         gap = current.metrics.time_p50 - previous.metrics.time_p50
         if gap / current.metrics.time_p50 > settings.max_relative_time_gap:
             break
@@ -168,7 +168,7 @@ def _velocity_join(
 
 def _greedy_maximal_groups(
     ordered: Sequence[int],
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     settings: config.AvalancheDetectionConfig,
 ) -> list[list[int]]:
     candidates: list[list[int]] = []
@@ -176,7 +176,7 @@ def _greedy_maximal_groups(
         eligible = [
             group
             for group in candidates
-            if _velocity_join(subavalanches[index], group, subavalanches, settings)
+            if _velocity_join(cascades[index], group, cascades, settings)
         ]
         if eligible:
             for group in eligible:
@@ -189,7 +189,7 @@ def _greedy_maximal_groups(
         chosen = max(
             candidates,
             key=lambda group: (
-                sum(subavalanches[index].n_swaps for index in group),
+                sum(cascades[index].n_swaps for index in group),
                 group,
             ),
         )
@@ -231,7 +231,7 @@ def _metrics(
 
 
 def detect_avalanches(
-    subavalanches: Sequence[models.Subavalanche],
+    cascades: Sequence[models.Cascade],
     events: Sequence[models.SwapEvent],
     settings: config.AvalancheDetectionConfig,
 ) -> DetectionResult:
@@ -239,50 +239,50 @@ def detect_avalanches(
 
     mechanism = AvalancheMechanism(settings.mechanism)
     ordered = sorted(
-        range(len(subavalanches)),
-        key=lambda index: (subavalanches[index].metrics.time_p50, index),
+        range(len(cascades)),
+        key=lambda index: (cascades[index].metrics.time_p50, index),
     )
     if mechanism == AvalancheMechanism.RELATIVE_TIME:
-        groups = _time_only_groups(ordered, subavalanches, settings)
+        groups = _time_only_groups(ordered, cascades, settings)
     elif mechanism == AvalancheMechanism.CLOSEST_SPATIAL:
-        groups = _closest_groups(ordered, subavalanches, settings)
+        groups = _closest_groups(ordered, cascades, settings)
     elif mechanism in (
         AvalancheMechanism.LARGEST_FIXED_DISTANCE,
         AvalancheMechanism.LARGEST_HYBRID_TIME,
         AvalancheMechanism.LARGEST_VELOCITY,
     ):
-        groups = _largest_groups(ordered, subavalanches, settings, mechanism)
+        groups = _largest_groups(ordered, cascades, settings, mechanism)
     else:
-        groups = _greedy_maximal_groups(ordered, subavalanches, settings)
+        groups = _greedy_maximal_groups(ordered, cascades, settings)
 
     avalanches: list[models.Avalanche] = []
     swap_assignments = [-1] * len(events)
-    subavalanche_assignments = [-1] * len(subavalanches)
+    cascade_assignments = [-1] * len(cascades)
     for avalanche_index, group in enumerate(groups):
         swaps = sorted(
             (
                 swap
-                for subavalanche_index in group
-                for swap in subavalanches[subavalanche_index].swap_indices
+                for cascade_index in group
+                for swap in cascades[cascade_index].swap_indices
             ),
             key=lambda index: (events[index].time, index),
         )
         value = models.Avalanche(
             index=avalanche_index,
-            subavalanche_indices=tuple(group),
+            cascade_indices=tuple(group),
             swap_indices=tuple(swaps),
             metrics=_metrics(swaps, events),
         )
         avalanches.append(value)
-        for subavalanche_index in group:
-            subavalanche_assignments[subavalanche_index] = avalanche_index
+        for cascade_index in group:
+            cascade_assignments[cascade_index] = avalanche_index
         for swap_index in swaps:
             swap_assignments[swap_index] = avalanche_index
 
-    if any(index < 0 for index in swap_assignments + subavalanche_assignments):
+    if any(index < 0 for index in swap_assignments + cascade_assignments):
         raise RuntimeError("avalanche detection left an event unassigned")
     return DetectionResult(
         tuple(avalanches),
         tuple(swap_assignments),
-        tuple(subavalanche_assignments),
+        tuple(cascade_assignments),
     )

@@ -1,4 +1,4 @@
-"""Space-time clustering of swaps into subavalanches."""
+"""Space-time clustering of snaps into cascades."""
 
 import dataclasses
 import math
@@ -13,21 +13,21 @@ from crumpling import models
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class DetectionResult:
-    subavalanches: tuple[models.Subavalanche, ...]
-    swap_to_subavalanche: tuple[int, ...]
+    cascades: tuple[models.Cascade, ...]
+    swap_to_cascade: tuple[int, ...]
 
 
 def _metrics(
     swap_indices: Sequence[int],
     events: Sequence[models.SwapEvent],
     average_bond_length: float,
-) -> models.SubavalancheMetrics:
+) -> models.CascadeMetrics:
     ordered = tuple(sorted(swap_indices, key=lambda index: (events[index].time, index)))
     times = np.array([events[index].time for index in ordered], dtype=float)
     points = np.array([events[index].position for index in ordered], dtype=float)
     center = points.mean(axis=0)
     inertia_1, inertia_2 = geometry.planar_inertia_eigenvalues(points)
-    return models.SubavalancheMetrics(
+    return models.CascadeMetrics(
         time_p50=float(np.median(times)),
         time_start=float(times[0]),
         time_end=float(times[-1]),
@@ -41,7 +41,7 @@ def _metrics(
 
 
 def _overlap_count(
-    current: models.Subavalanche, values: Sequence[models.Subavalanche]
+    current: models.Cascade, values: Sequence[models.Cascade]
 ) -> int:
     start = current.metrics.time_start
     finish = current.metrics.time_end
@@ -51,9 +51,9 @@ def _overlap_count(
     )
 
 
-def detect_subavalanches(
+def detect_cascades(
     events: Sequence[models.SwapEvent],
-    settings: config.SubavalancheDetectionConfig,
+    settings: config.CascadeDetectionConfig,
 ) -> DetectionResult:
     """Detect active space-time clusters using the original closest-group rule."""
 
@@ -93,8 +93,8 @@ def detect_subavalanches(
         ]
 
     completed.extend(active)
-    subavalanches = [
-        models.Subavalanche(
+    cascades = [
+        models.Cascade(
             index=index,
             swap_indices=tuple(
                 sorted(group, key=lambda swap: (events[swap].time, swap))
@@ -103,20 +103,20 @@ def detect_subavalanches(
         )
         for index, group in enumerate(completed)
     ]
-    subavalanches = [
+    cascades = [
         dataclasses.replace(
             value,
             metrics=dataclasses.replace(
                 value.metrics,
-                simultaneous_count=_overlap_count(value, subavalanches),
+                simultaneous_count=_overlap_count(value, cascades),
             ),
         )
-        for value in subavalanches
+        for value in cascades
     ]
     assignments = [-1] * len(events)
-    for value in subavalanches:
+    for value in cascades:
         for swap_index in value.swap_indices:
             assignments[swap_index] = value.index
     if any(index < 0 for index in assignments):
-        raise RuntimeError("subavalanche detection left an event unassigned")
-    return DetectionResult(tuple(subavalanches), tuple(assignments))
+        raise RuntimeError("cascade detection left an event unassigned")
+    return DetectionResult(tuple(cascades), tuple(assignments))
