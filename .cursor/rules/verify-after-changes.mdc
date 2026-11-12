@@ -1,0 +1,31 @@
+---
+description: After a moderate or large change, run the relevant check and fix failures before stopping
+alwaysApply: true
+---
+
+# Verify moderate changes before stopping
+
+Before you finish a moderate or large change, run the smallest check that still exercises it. A change is moderate when it alters behavior under `crumpling/`, `tests/`, `notebooks/`, `configs/`, or `legacy/`. Skip questions, review-only turns, and docs-only edits.
+
+Use the `crumpling` conda env for notebooks. Use a Python that has pytest for tests.
+
+- `parsing.py`, `models.py` → `python -m pytest -q tests/test_parsing.py`
+- `geometry.py`, `detection/cascades.py` → `tests/test_cascades.py`
+- `detection/avalanches.py` → `tests/test_avalanches.py`
+- `pipeline.py`, `cli.py`, `config.py`, `configs/` → `tests/test_pipeline.py`
+- `catalogs.py`, `output/` → `tests/test_catalogs.py`
+- a notebook → execute the changed notebook, or only the cells that cover the edit, and do not pass `--inplace`
+- CLI or simulation behavior → `python -m crumpling` or `crumpling-swapstat` on a fixture or the shortest input that hits the change
+- `legacy/` → `python legacy/cpp_core/build_core.py` or the changed slice of `notebooks/compare_cpp_vs_python.ipynb`
+
+If the check fails, fix the cause and rerun. Do not ask whether to keep going.
+
+Budget, also enforced by `.cursor/hooks/policy.py`:
+
+- **3** repair rounds after failures
+- **10 minutes** from the first failure
+- **3 minutes** for each command. If a notebook or simulation needs longer, run a smaller slice that still hits the change
+
+When the budget is spent, stop editing. Report the command, the error, and what you already tried.
+
+A stop hook reruns the mapped pytest or notebook if you skip the check. Messages from that hook start with `[verify-hook]`. A new request from the user resets the budget.

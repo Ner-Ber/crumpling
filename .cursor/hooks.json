@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py edit",
+        "timeout": 10
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py shell-done",
+        "matcher": "Shell",
+        "timeout": 10
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py shell-fail",
+        "matcher": "Shell",
+        "timeout": 10
+      }
+    ],
+    "stop": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py stop",
+        "timeout": 200,
+        "loop_limit": 5
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py user-prompt",
+        "timeout": 10
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py guard-write",
+        "matcher": "Write",
+        "timeout": 15
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "/usr/bin/python3 .cursor/hooks/policy.py guard-shell",
+        "timeout": 15
+      }
+    ]
+  }
+}

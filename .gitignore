@@ -11,3 +11,6 @@ venv/
 .DS_Store
 *Zone.Identifier
 outputs/
+.cursor/hooks/state/
+legacy/cpp_core/build/
+data/ingested/

@@ -1,0 +1,33 @@
+---
+description: Fit new code into existing crumpling modules and ask before creating one
+alwaysApply: true
+---
+
+# Extend existing modules
+
+Put new behavior in the module that already owns that job. Do not add a file under `crumpling/` or a new subpackage.
+
+- `crumpling/parsing.py` — swap tables and manifests
+- `crumpling/models.py` — domain types
+- `crumpling/geometry.py` — numeric geometry
+- `crumpling/config.py` — INI and analysis settings
+- `crumpling/detection/cascades.py` — clustering snaps into cascades
+- `crumpling/detection/avalanches.py` — grouping cascades into avalanches
+- `crumpling/pipeline.py` — orchestration
+- `crumpling/cli.py` — command line
+- `crumpling/catalogs.py` — pandas catalogs for notebooks
+- `crumpling/output/catalogs.py` — TSV catalog schemas
+- `crumpling/output/structure.py` — avalanche structure output
+
+```python
+# bad: crumpling/detection/new_gap.py for a cascade rule
+# good: a function in crumpling/detection/cascades.py
+```
+
+Tests go in the existing `tests/test_*.py` file for that area. A new test file is fine when none of those fit.
+
+If the behavior does not belong in any module above, stop and ask. Name the exact path and why the existing modules do not fit. Do not create the file, directory, or `__init__.py` until the user approves that path.
+
+A Write of a new `crumpling/**/*.py` file is blocked until the transcript shows that approval. A shell command that creates one asks in the approval card.
+
+Notebooks, `legacy/`, and one-off scripts under `data/` are not package modules.
