@@ -1,0 +1,22 @@
+{
+  "python.defaultInterpreterPath": "/home/neriberman/miniconda3/envs/crumpling/bin/python",
+  "python.condaPath": "/home/neriberman/miniconda3/condabin/conda",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.venvPath": "/home/neriberman/miniconda3/envs",
+  "python.venvFolders": ["envs"],
+  "python-envs.python-environments.globalSearchPaths": [
+    "/home/neriberman/miniconda3/envs",
+    "/home/neriberman/miniconda3"
+  ],
+  "python-env.globalSearchPaths": [
+    "/home/neriberman/miniconda3/envs",
+    "/home/neriberman/miniconda3"
+  ],
+  "jupyter.jupyterServerType": "local",
+  "jupyter.kernels.trusted": [
+    "/home/neriberman/miniconda3/envs/crumpling/bin/python",
+    "/home/neriberman/.local/share/jupyter/kernels/crumpling/kernel.json"
+  ],
+  "notebook.defaultFormatter": "ms-python.autopep8"
+}

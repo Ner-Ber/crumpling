@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "/home/neriberman/miniconda3/envs/crumpling/bin/python",
+		"python.terminal.activateEnvironment": true,
+		"workbench.colorCustomizations": {
+			"titleBar.activeBackground": "#0980b3",
+			"titleBar.activeForeground": "#5c0404",
+			"titleBar.inactiveBackground": "#416372",
+			"titleBar.inactiveForeground": "#c8e6d0",
+		},
+	}
+}
